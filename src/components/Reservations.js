@@ -7,6 +7,8 @@ const config = require('../config.json');
 
 export default class Reservations extends Component {
 
+
+
   state = {
     newReservation: {
         'id': '',
@@ -21,9 +23,8 @@ export default class Reservations extends Component {
     reservations: []
 }
 
-  handleAddReservation = async (id, event) => {
+handleSubmit = async (id, event) => {
     event.preventDefault();
-    // add call to AWS API Gateway add product endpoint here
     try {
       const params = {
         'id': id,
@@ -33,9 +34,53 @@ export default class Reservations extends Component {
         'clientName': this.state.newReservation.clientName,
         'clientAddress':this.state.newReservation.clientAddress,
         'clientPayment':this.state.newReservation.clientPayment
+    };
+
+       await axios.post(`${config.api.invokeUrl}/`, params);
+       this.setState({reservations:[...this.state.reservations, this.state.newReservation] });
+       this.setState({newReservation: { 'id': '',
+       'minionType': '',
+       'minionSize': '',
+       'minionColor': '',
+       'clientName': '',
+       'clientAddress': '',
+       'clientPayment': ''
+      }});
 
 
-      };
+    } catch(err){
+      console.log(`N enviou o email: ${err}`);
+
+
+    }
+    this.setState({ reservations: [...this.state.reservations, this.state.newReservation] })
+    this.setState({
+      newReservation: {
+          'id': '',
+          'minionType': '',
+          'minionSize': '',
+          'minionColor': '',
+          'clientName': '',
+          'clientAddress': '',
+          'clientPayment': ''
+      }});  
+    
+    }
+
+
+  handleAddReservation = async (id, event) => {
+    event.preventDefault();
+    try {
+      const params = {
+        'id': id,
+        'minionType': this.state.newReservation.minionType,
+        'minionSize':this.state.newReservation.minionSize,
+        'minionColor': this.state.newReservation.minionColor,
+        'clientName': this.state.newReservation.clientName,
+        'clientAddress':this.state.newReservation.clientAddress,
+        'clientPayment':this.state.newReservation.clientPayment
+    };
+
        await axios.post(`${config.api.invokeUrl}/product-reservation/${id}`, params);
        this.setState({reservations:[...this.state.reservations, this.state.newReservation] });
        this.setState({newReservation: { 'id': '',
@@ -68,27 +113,6 @@ export default class Reservations extends Component {
     }
 
 
-  handleUpdateProduct = (id, name) => {
-    // add call to AWS API Gateway update product endpoint here
-    const productToUpdate = [...this.state.products].find(product => product.id === id);
-    const updatedProducts = [...this.state.products].filter(product => product.id !== id);
-    productToUpdate.productname = name;
-    updatedProducts.push(productToUpdate);
-    this.setState({products: updatedProducts});
-  }
-
-  handleDeleteProduct = (id, event) => {
-    event.preventDefault();
-    // add call to AWS API Gateway delete product endpoint here
-    const updatedProducts = [...this.state.products].filter(product => product.id !== id);
-    this.setState({products: updatedProducts});
-  }
-
-  fetchProducts = () => {
-    // add call to AWS API Gateway to fetch products here
-    // then set them in state
-  }
-
   onAddReservationMinionType = event => this.setState({ newReservation: { ...this.state.newReservation, "minionType": event.target.value } });
   onAddReservationMinionSize = event => this.setState({ newReservation: { ...this.state.newReservation, "minionSize": event.target.value } });
   onAddReservationMinionColor = event => this.setState({ newReservation: { ...this.state.newReservation, "minionColor": event.target.value } });
@@ -97,9 +121,6 @@ export default class Reservations extends Component {
   onAddReservationClientPayment = event => this.setState({ newReservation: { ...this.state.newReservation, "clientPayment": event.target.value } });
   onAddReservationID = event => this.setState({ newReservation: { ...this.state.newReservation, "id": event.target.value } });
 
-  componentDidMount = () => {
-    this.fetchProducts();
-  }
 
   render() {
     return (
@@ -113,7 +134,7 @@ export default class Reservations extends Component {
                     <div className="col-md-2">
                             <div className="form-group">
                                 <label>Digite seu e-mail:</label>
-                                <input type="text"
+                                <input type="email"
                                     name="id"
                                     value={this.state.newReservation.id}
                                     className="form-control"
@@ -207,7 +228,7 @@ export default class Reservations extends Component {
                     </div>
                     <div className="row">
                         <div className="col-md-1">
-                            <button onClick={event => this.handleAddReservation(this.state.newReservation.id, event)}className="btn btn-success"> Salvar</button>
+                            <button onClick={event => this.handleAddReservation(this.state.newReservation.id, event)} className="btn btn-success"> Salvar</button>
                         </div>
                     </div>
                 </div>
